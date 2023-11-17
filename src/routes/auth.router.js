@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const passport = require('passport');
 
 const User = require('../models/User');
 const UserService = require('../services/user.service');
@@ -10,17 +11,14 @@ module.exports = () => {
 		.get((req, res) => {
 			return res.render('auth/login');
 		})
-		.post(async (req, res) => {
-			try {
-				if (
-					userService.authenticateUser(req.body.username, req.body.password)
-				) {
-					return res.redirect('/browse');
-				}
-				return res.redirect('/auth/login');
-			} catch (err) {
-				return res.redirect('/auth/login');
-			}
+		.post((req, res, next) => {
+			// return res.redirect('/browse');
+			passport.authenticate('local', {
+				session: true,
+				failureRedirect: '/auth/login',
+				failureMessage: true,
+				successRedirect: '/browse',
+			})(req, res, next);
 		});
 
 	// Registration

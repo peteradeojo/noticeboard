@@ -4,8 +4,10 @@ const debug = require('debug')('app');
 const morgan = require('morgan');
 
 const authRouter = require('./routes/auth.router');
-const { connectDb } = require('../lib/database');
+const { connectDb } = require('./lib/database');
 const session = require('express-session');
+const passport = require('passport');
+const indexRouter = require('./routes/index.router');
 
 if (process.env.NODE_ENV !== 'production') {
 	require('dotenv').config();
@@ -26,12 +28,15 @@ app.use(session({
   resave: false,
 }));
 
+require('./lib/passport')(passport);
+
 app.use('/js', express.static(path.resolve(__dirname, '../public/dist/')));
 
+app.use(passport.initialize());
+app.use('/', indexRouter());
 app.use('/auth', authRouter());
 
 const port = process.env.PORT || 3000;
-
 app.listen(port, async () => {
 	try {
 		const { connection } = await connectDb();
